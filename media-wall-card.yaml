@@ -1,0 +1,69 @@
+# Minimal: the owner's own entities are the defaults.
+# Replaces the four Mushroom template cards (TV, TV with sound, Games, Music) on the Home view, section 2.
+type: custom:media-wall-card
+grid_options:
+  columns: 12
+  rows: 4
+
+---
+# Full: every option with its default.
+type: custom:media-wall-card
+name: Living room
+state_entity: input_text.audio_state
+script: script.audio_management_lovelace
+field: actionid
+off_id: "Off"
+movie: false
+off_button: false
+picture: true
+standby_below: 3
+busy_timeout: 5
+plugs:
+  - id: tv
+    name: TV
+    switch: switch.tv_switch
+    power: sensor.tv_power
+    icon: mdi:television
+  - id: amp
+    name: Amp
+    switch: switch.amplifier_switch
+    power: sensor.amplifier_power
+    icon: mdi:amplifier
+  - id: sub
+    name: Sub
+    switch: switch.subwoofer_switch
+    power: sensor.subwoofer_power
+    icon: mdi:speaker
+  - id: ps
+    name: PS
+    switch: switch.playstation_switch
+    power: sensor.playstation_power
+    icon: mdi:sony-playstation
+modes:
+  - id: TV
+    name: TV
+    label: TV
+    icon: mdi:television
+    on: [tv]
+  - id: TVS
+    name: TV + sound
+    label: TV with sound
+    icon: mdi:television-ambient-light
+    on: [tv, amp, sub]
+  - id: Games
+    name: Games
+    label: Games
+    icon: mdi:sony-playstation
+    on: [tv, amp, sub, ps]
+  - id: Music
+    name: Music
+    label: Music
+    icon: mdi:music
+    on: [amp, sub]
+colors:
+  active: var(--blue-color, #2196f3)
+  warn: var(--warning-color, #ff9800)
+  error: var(--error-color, #db4437)
+grid_options:
+  columns: 12
+  rows: 4
