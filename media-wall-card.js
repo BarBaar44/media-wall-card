@@ -16,7 +16,7 @@
 // Everything sits in one block so the top-level names cannot clash with the
 // sister cards when the files are loaded as classic scripts.
 {
-const VERSION = "0.1.0";
+const VERSION = "0.1.1";
 
 const MW_GRACE_MS = 5000; // plugs may lag the mode this long before a mismatch shows
 const MW_FAIL_MS = 6000; // "Music: no response" shows this long
@@ -73,7 +73,7 @@ let mwUid = 0;
  * The owner's media wall as SVG markup, 118 x 72: wall mounted TV, cream
  * cabinet with a grey top, panel doors and the receiver in the open shelf,
  * centre speaker on top, two white towers with grey grilles and plants, the
- * sub at the far left. o = { tv, amp, sub, ps, lit, uid }: the devices this
+ * sub as a black cube on the floor at the far left. o = { tv, amp, sub, ps, lit, uid }: the devices this
  * mode uses are drawn in full, the others ghosted; lit = the mode is active
  * (or being switched to), so its devices light up in the active colour.
  */
@@ -82,14 +82,13 @@ function mwScene(o) {
   const C = "var(--mw-c)";
   const lit = o.lit;
   const part = (on, body) => `<g opacity="${on ? 1 : 0.22}">${body}</g>`;
-  const waves = (x, y, s) => (lit ? `<g class="wave" style="stroke:${C}" fill="none" stroke-width="1.4" stroke-linecap="round">
-    <path d="M${x} ${y - 4} q${3 * s} 4 0 8"/><path d="M${x + 3 * s} ${y - 7} q${5 * s} 7 0 14"/></g>` : "");
-  const tower = (x, pot) => `<g ${K}>
-    <rect x="${x - 2}" y="64" width="18" height="3" fill="#f4f4f4"/>
+  /* A tower: the plinth stays on the floor, the body (with the plant) sways from its foot while it plays. */
+  const tower = (x, pot, sway) => `<g ${K}><rect x="${x - 2}" y="64" width="18" height="3" fill="#f4f4f4"/></g>
+    <g class="${sway}"><g ${K}>
     <rect x="${x}" y="17" width="14" height="47" fill="#f4f4f4"/>
     <rect x="${x + 2}" y="19" width="10" height="33" fill="#a3a3a8" stroke-width="1"/></g>
     <g ${K} stroke-width="1.2"><path d="M${x + 3} 17 l1 -5 h6 l1 5 z" fill="${pot}"/>
-    <path d="M${x + 7} 12 q-7 -6 -8 -1 q4 2 8 1 z M${x + 7} 12 q6 -8 9 -3 q-4 3 -9 3 z M${x + 7} 12 q0 -8 2 -9 q1 5 -2 9 z" fill="#6f9a5a"/></g>`;
+    <path d="M${x + 7} 12 q-7 -6 -8 -1 q4 2 8 1 z M${x + 7} 12 q6 -8 9 -3 q-4 3 -9 3 z M${x + 7} 12 q0 -8 2 -9 q1 5 -2 9 z" fill="#6f9a5a"/></g></g>`;
   const id = `mw${o.uid}`;
   const tvLit = lit && o.tv;
   const tv = `<defs><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1">
@@ -113,21 +112,25 @@ function mwScene(o) {
   const avr = `<g ${K} stroke-width="1.1"><rect x="50" y="46.5" width="20" height="6.5" fill="#1d1d1d"/></g>
     <rect x="54" y="48.3" width="9" height="2.4" rx=".4" style="fill:${ampLit ? C : "#3a3a3a"}"/>
     <circle cx="66.5" cy="49.7" r="1.8" fill="#3a3a3a" style="stroke:${ampLit ? C : "#555"}" stroke-width=".8"/>`;
-  const center = `<g ${K}><rect x="51" y="33" width="18" height="7" fill="#f4f4f4"/>
-    <rect x="52.5" y="35" width="15" height="4" fill="#a3a3a8" stroke-width=".8"/></g>
-    ${ampLit ? `<path class="wave" d="M56 30.5 q4 -2.5 8 0" fill="none" style="stroke:${C}" stroke-width="1.3" stroke-linecap="round"/>` : ""}`;
-  const towers = tower(12, "#8aa08a") + tower(94, "#d9b04a") + (ampLit ? waves(28, 32, 1) + waves(92, 32, -1) : "");
+  const center = `<g class="${ampLit ? "pump" : ""}"><g ${K}><rect x="51" y="33" width="18" height="7" fill="#f4f4f4"/>
+    <rect x="52.5" y="35" width="15" height="4" fill="#a3a3a8" stroke-width=".8"/></g></g>`;
+  const towers = tower(12, "#8aa08a", ampLit ? "sway l" : "") + tower(94, "#d9b04a", ampLit ? "sway r" : "");
   const subLit = lit && o.sub;
-  const sub = `<g ${K}><rect x="0.8" y="44" width="9" height="23" fill="#262626"/></g>
-    <circle cx="5.3" cy="58" r="2.6" fill="#141414" style="stroke:${subLit ? C : "#444"}" stroke-width=".8"/>`;
+  // The sub stands on the floor at the far left (outside the shifted scene), a black cube with a front driver.
+  const sub = `<g class="${subLit ? "jump" : ""}"><g ${K}>
+      <polygon points="1,51 17,51 20.5,47.5 4.5,47.5" fill="#3d3d3d"/>
+      <polygon points="17,51 20.5,47.5 20.5,63.5 17,67" fill="#1e1e1e"/>
+      <rect x="1" y="51" width="16" height="16" fill="#2a2a2a"/></g>
+      <g class="${subLit ? "cone" : ""}"><circle cx="9" cy="59" r="5.6" fill="#161616" stroke="#4a4a4a" stroke-width=".9"/>
+      <circle cx="9" cy="59" r="2" fill="#333" style="stroke:${subLit ? C : "#555"}" stroke-width=".8"/></g></g>`;
   const pad = o.ps ? `<g ${K} stroke-width="1.1"><path d="M34 40 q1.5 -3.5 6 -3.5 h5 q4.5 0 6 3.5 l.6 2 q.6 2.5 -2 2.5 q-2 0 -3.5 -2 h-7 q-1.5 2 -3.5 2 q-2.6 0 -2 -2.5 z" fill="#f4f4f4"/></g>
     ${lit ? `<rect x="40.5" y="37.5" width="4" height="1.2" rx=".6" style="fill:${C}"/>` : ""}` : "";
   const notes = ampLit && !o.tv ? `<g class="notes" style="fill:${C};stroke:${C}" stroke-width="1.4" stroke-linecap="round">
     <ellipse cx="50" cy="18" rx="2.6" ry="2" stroke="none"/><path d="M52.6 18 V7 l5 1.8" fill="none"/>
     <ellipse cx="65" cy="14" rx="2.3" ry="1.8" stroke="none"/><path d="M67.3 14 V4" fill="none"/></g>` : "";
-  return `<svg viewBox="0 0 118 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <ellipse cx="59" cy="68" rx="58" ry="2.4" fill="#000" opacity=".3"/>
-    ${part(o.tv, tv)}${cabinet}${part(o.amp, avr)}${part(o.amp, center)}${part(o.amp, towers)}${part(o.sub, sub)}${pad}${notes}</svg>`;
+  return `<svg viewBox="0 0 134 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="67" cy="68" rx="66" ry="2.4" fill="#000" opacity=".3"/>
+    ${part(o.sub, sub)}<g transform="translate(16 0)">${part(o.tv, tv)}${cabinet}${part(o.amp, avr)}${part(o.amp, center)}${part(o.amp, towers)}${pad}${notes}</g></svg>`;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -187,7 +190,7 @@ ${Object.values(MW_COLORS).map(([v, d]) => `    ${v}: ${d};`).join("\n")}
   .btn.act .tx b ha-icon, .btn.busy .tx b ha-icon { color: var(--mw-c); }
   .tx small { font-size: 11px; line-height: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx small:empty { display: none; }
-  .art { flex: none; align-self: center; height: min(100%, 78px); aspect-ratio: 118 / 72; padding-right: 4px; }
+  .art { flex: none; align-self: center; height: min(100%, 72px); aspect-ratio: 134 / 72; padding-right: 4px; }
   .art svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .btn:not(.act):not(.busy) .art { opacity: .85; }
   .nopic .art { display: none; }
@@ -202,11 +205,23 @@ ${Object.values(MW_COLORS).map(([v, d]) => `    ${v}: ${d};`).join("\n")}
   }
   @container (max-height: 63px) and (max-width: 199px) { .art { display: none; } .tx { position: static; justify-content: center; } }
 
-  .wave { animation: mw-wave 1.6s ease-in-out infinite; }
-  @keyframes mw-wave { 50% { opacity: .35; } }
+  /* sound: the towers sway from their foot, the centre speaker leans in and out, the sub hops and its driver pumps, notes rise */
+  .sway { transform-box: fill-box; transform-origin: 50% 100%; animation: 1.4s ease-in-out infinite alternate; }
+  .sway.l { animation-name: mw-sway-l; }
+  .sway.r { animation-name: mw-sway-r; }
+  @keyframes mw-sway-l { from { transform: rotate(-2.2deg); } to { transform: rotate(2.2deg); } }
+  @keyframes mw-sway-r { from { transform: rotate(2.2deg); } to { transform: rotate(-2.2deg); } }
+  .pump { transform-box: fill-box; transform-origin: 50% 100%; animation: mw-pump .6s ease-in-out infinite alternate; }
+  @keyframes mw-pump { to { transform: scale(1.09); } }
+  .jump { transform-box: fill-box; transform-origin: 50% 100%; animation: mw-jump .5s ease-out infinite; }
+  @keyframes mw-jump { 0%, 45%, 100% { transform: translateY(0) scaleY(1); } 12% { transform: translateY(-1.3px) scaleY(1.02); } 28% { transform: translateY(0) scaleY(.97); } }
+  .cone { transform-box: fill-box; transform-origin: 50% 50%; animation: mw-cone .25s ease-in-out infinite alternate; }
+  @keyframes mw-cone { to { transform: scale(1.12); } }
+  .notes { animation: mw-notes 2.4s ease-in-out infinite; }
+  @keyframes mw-notes { 0% { transform: translateY(2px); opacity: .4; } 50% { opacity: 1; } 100% { transform: translateY(-2px); opacity: .4; } }
   @keyframes mw-pulse { 50% { opacity: .45; } }
   @media (prefers-reduced-motion: reduce) {
-    .wave, .btn.busy .tx small, .pw.busy { animation: none !important; }
+    .sway, .pump, .jump, .cone, .notes, .btn.busy .tx small, .pw.busy { animation: none !important; }
   }
 `;
 

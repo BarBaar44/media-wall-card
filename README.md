@@ -13,7 +13,7 @@ Made for modes that are power combinations of a few smart plugs (TV, receiver, s
 | Title | The mode: `TV with sound`, `All off`, or the raw value if the script set something the card does not know. `Unavailable` in amber when the state entity is |
 | Status line | `since 17:45` (when the mode last changed; `since Tue 17:45` earlier this week, `since Nov 4` before that), then what is going on: `switching to Music`, `turning off`, `Music: no response` (amber, for 6 s), then the first mismatch in amber with a count: `PS is off`, `TV is on · +1`, `Amp offline` |
 | Plug indicators | Icon and power per plug: `86 W`, `standby` (on but below `standby_below`), `off`, `on` (no power sensor), `n/a` with a red badge (unavailable). A plug that does not match the mode gets an amber outline |
-| Mode buttons | 2 × 2 (a fifth mode takes a full width third row). The active mode has a coloured border and tint and `tap to turn off`. The drawing shows the mode's devices in full and ghosts the rest; in the active mode they light up: TV picture (with ambient glow when sound is on), receiver display, sound waves from the speakers, the sub, the controller, music notes |
+| Mode buttons | 2 × 2 (a fifth mode takes a full width third row). The active mode has a coloured border and tint and `tap to turn off`. The drawing shows the mode's devices in full and ghosts the rest; in the active mode they light up and move: TV picture (with ambient glow when sound is on), receiver display, the towers sway from their foot, the centre speaker leans in and out, the sub hops and its driver pumps, the controller lights, music notes float. All motion stops under reduced motion |
 | While switching | The pressed button gets a dashed border and `switching…` until the state follows (or a plug changes). After `busy_timeout` seconds without a change it goes back and the line says `no response` |
 
 Mismatches: a plug that should be on for the mode but is off (`Amp is off`), or on but should be off (`TV is on`, also in All off). The card waits 5 seconds after a mode change before it compares, because the plugs follow the script one by one. Unavailable plugs are always flagged.
@@ -84,7 +84,7 @@ A `plugs` list replaces these. `switch` is required; `power: null` (or leaving i
 | `Music` | Music | Music | `[amp, sub]` |
 | `Movie` (with `movie: true`) | Movie | Movie | `[tv, amp, sub]` |
 
-`id` is the value the script sets in the state entity and gets as `actionid`. `on` lists the plugs that should be on in this mode: it drives the mismatch check and which devices the drawing shows (`tv` the TV, `amp` the receiver and speakers, `sub` the subwoofer, `ps` the controller). Each mode can have an `icon` (shown with `picture: false`) and a `color` for its highlight. A `modes` list replaces the defaults; it is edited in YAML (the visual editor keeps it). A full example is in [`media-wall-card.yaml`](media-wall-card.yaml).
+`id` is the value the script sets in the state entity and gets as `actionid`. `on` lists the plugs that should be on in this mode: it drives the mismatch check and which devices the drawing shows (`tv` the TV, `amp` the receiver and speakers, `sub` the subwoofer cube on the floor, `ps` the controller). Each mode can have an `icon` (shown with `picture: false`) and a `color` for its highlight. A `modes` list replaces the defaults; it is edited in YAML (the visual editor keeps it). A full example is in [`media-wall-card.yaml`](media-wall-card.yaml).
 
 ## Design decisions
 

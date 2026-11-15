@@ -257,6 +257,16 @@ test("drawing: the mode's devices in full, the rest ghosted; lit only when activ
   assert(!render(states(), { picture: false })._el.btns[0].art.innerHTML);
 });
 
+test("motion only where the active mode plays sound", () => {
+  clock = NOW;
+  let art = render(states({ mode: "TVS" }))._el.btns.map((b) => b.art.innerHTML);
+  for (const c of ['class="sway l"', 'class="sway r"', 'class="pump"', 'class="jump"', 'class="cone"']) assert(art[1].includes(c), c);
+  assert(!/sway|pump|jump|cone/.test(art[0] + art[2] + art[3]), "inactive modes stand still");
+  assert(!art[1].includes("rip"), "no sound wave arcs");
+  art = render(states({ mode: "TV" }))._el.btns.map((b) => b.art.innerHTML);
+  assert(!/sway|pump|jump/.test(art[0]), "TV alone has no sound");
+});
+
 test("drawing is not rebuilt when nothing in it changes", () => {
   clock = NOW;
   const c = render(states());
