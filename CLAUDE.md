@@ -18,7 +18,7 @@ Marketplace (formerly HACS) dashboard card (Lovelace) for the living room audio 
 
 * Four Shelly plugs: `switch.tv_switch`, `switch.amplifier_switch` (Denon receiver, 5.1), `switch.subwoofer_switch`, `switch.playstation_switch`, each with a `sensor.*_power` (W).
 * `script.audio_management_lovelace` with `actionid`: TV, TVS, Games, Music, Movie (same as TVS), Off. If the mode is already active it switches everything off. It sets `input_text.audio_state`, also when automations switch everything off ("Go to bed", "Shutdown when away"). **Do not change the script from here.**
-* The media wall (from Bb's photo): wall mounted TV, cream cabinet with a grey top, two panel doors with diamond escutcheons, the Denon in the open middle shelf with a drawer below, white centre speaker on top, two white B&W towers with grey grilles (green pot left, gold pot right), black sub at the far left. Where the PlayStation stands is unknown; Games draws a controller on the cabinet.
+* The media wall (from Bb's photo): wall mounted TV, cream cabinet with a grey top, two panel doors with diamond escutcheons, the Denon in the open middle shelf with a drawer below, white centre speaker on top, two white B&W towers with grey grilles (green pot left, gold pot right), black sub at the far left (drawn as a cube on the floor, outside the shifted scene). Where the PlayStation stands is unknown; Games draws a controller on the cabinet.
 
 ## Rules to keep
 
@@ -26,10 +26,10 @@ Marketplace (formerly HACS) dashboard card (Lovelace) for the living room audio 
 * Tapping the active mode sends that mode again (the script turns it off). No confirmation dialogs.
 * Busy: the pressed button shows dashed until the state value changes or any plug switch changes; after `busy_timeout` it goes back and the line shows `<mode>: no response` for 6 s. Pressing the busy button again sends nothing.
 * Mismatches compare the plugs with the mode's `on` list, only 5 s after the state last changed and not while busy; unavailable plugs always count. First one plus `· +n` in the status line, in amber.
-* Layout: 12 × 4, 248 px, always two columns of buttons (a fifth mode spans the third row). Button container query: below 200 px width the label goes top left, the hint is hidden and the drawing sits bottom right at 58 px; below 64 px height the narrow drawing is hidden. Measure in a real browser (Playwright) at 360 and 520 px after any layout change; a stub `ha-card` must not set `display` inline.
+* Layout: 12 × 4, 248 px, always two columns of buttons (a fifth mode spans the third row). Button container query: below 200 px width the label goes top left, the hint is hidden and the drawing sits bottom right at 58 px; below 64 px height the narrow drawing is hidden. On desktop the drawing is at most 72 px high (134 × 72 viewBox), so labels like "TV + sound" fit next to it on a 244 px button. Measure in a real browser (Playwright) at 360 and 520 px after any layout change; a stub `ha-card` must not set `display` inline.
 * Drawing: line art (light surfaces, `#141414` outlines), ghosted parts at 0.22 opacity, lit parts in `--mw-c` (the mode's colour or `active`) via `style`, because SVG presentation attributes do not take `var()`. Rebuilt only when a button's lit state changes.
 * Visual editor (`MediaWallCardEditor`, on `ha-form`): fields show the defaults; only non-defaults are written; the four plug slots edit the plugs list, written only when it differs from the defaults; `modes` and unknown keys are kept. 
-* Animations (sound waves, busy pulse) stop under reduced motion.
+* Motion only in the active (or busy) mode with sound: towers sway ±2.2° from their foot (plinth stays put), centre speaker scales 9 % from its base, sub hops about 1.3 px and its driver pulses, notes float. No sound wave arcs (Bb dropped them). Busy pulse too. All stop under reduced motion.
 * The whole file sits in one block scope; `const VERSION` stays on its own line for the Release workflow.
 
 ## Releasing

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.1
+
+- The subwoofer is now drawn as a black cube on the floor at the far left (it was a narrow strip at the edge).
+- The drawing moves while the active mode plays sound: the towers sway from their foot, the centre speaker leans in and out, the sub hops and its driver pumps. The sound wave arcs are gone. Everything stands still under reduced motion.
+- The drawing is a little lower on desktop (72 px instead of 78 px), so a label like "TV + sound" keeps its room next to the wider picture.
+
 ## v0.1.0
 
 First release.
