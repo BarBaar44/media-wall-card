@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.2
+
+- The TV plays while it is on: a landscape with two rows of hills drifting by, a moving sun and a faint flicker; with sound on, the ambient glow behind it breathes.
+- Games has its own picture on the TV: a little side scroller (bricks and coins scroll by, a figure hops).
+- The controller on the cabinet is a size bigger and moved left so it reads at button size; its light bar glows while Games is active.
+- All of it stands still under reduced motion.
+
 ## v0.1.1
 
 - The subwoofer is now drawn as a black cube on the floor at the far left (it was a narrow strip at the edge).

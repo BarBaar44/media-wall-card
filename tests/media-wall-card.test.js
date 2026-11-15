@@ -267,6 +267,16 @@ test("motion only where the active mode plays sound", () => {
   assert(!/sway|pump|jump/.test(art[0]), "TV alone has no sound");
 });
 
+test("TV picture: landscape when on, game in Games, nothing when off", () => {
+  clock = NOW;
+  let art = render(states({ mode: "Games" }))._el.btns.map((b) => b.art.innerHTML);
+  assert(art[2].includes('class="gscroll"') && art[2].includes('class="ghop"') && art[2].includes('class="padglow"'), "game on the TV");
+  assert(!art[2].includes("tvpan"), "no landscape in Games");
+  assert(!/tvpan|gscroll|padglow/.test(art[0] + art[1] + art[3]), "inactive TVs are dark");
+  art = render(states({ mode: "TV" }))._el.btns.map((b) => b.art.innerHTML);
+  assert(art[0].includes('class="tvpan far"') && art[0].includes('class="tvsun"'), "landscape when the TV is on");
+});
+
 test("drawing is not rebuilt when nothing in it changes", () => {
   clock = NOW;
   const c = render(states());
