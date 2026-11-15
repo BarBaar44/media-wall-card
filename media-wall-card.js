@@ -16,7 +16,7 @@
 // Everything sits in one block so the top-level names cannot clash with the
 // sister cards when the files are loaded as classic scripts.
 {
-const VERSION = "0.1.1";
+const VERSION = "0.1.2";
 
 const MW_GRACE_MS = 5000; // plugs may lag the mode this long before a mismatch shows
 const MW_FAIL_MS = 6000; // "Music: no response" shows this long
@@ -77,6 +77,25 @@ let mwUid = 0;
  * mode uses are drawn in full, the others ghosted; lit = the mode is active
  * (or being switched to), so its devices light up in the active colour.
  */
+/* A row of rounded hills from x0 to x1 with base line y, one hill every period units, amp high; closed at the bottom of the screen. Repeats seamlessly when moved by one period. */
+function mwHills(x0, x1, y, period, amp) {
+  let d = `M${x0} 31 L${x0} ${y}`;
+  for (let x = x0; x < x1; x += period) d += ` q${period / 4} ${-amp * 2} ${period / 2} 0 t${period / 2} 0`;
+  return `${d} L${x1 + (period - ((x1 - x0) % period)) % period} 31 Z`;
+}
+
+/* Games on the TV: a little side scroller (blocks and coins scroll by, the hero hops). Our own drawing, no console branding. */
+function mwGame() {
+  let world = "";
+  for (let x = 34; x < 110; x += 6) world += `<rect x="${x}" y="25.5" width="6" height="5" fill="#c9702e" stroke="#6b3410" stroke-width=".5"/>`;
+  for (let x = 40; x < 110; x += 18) world += `<circle cx="${x}" cy="15" r="1.6" fill="#ffd36b"/><rect x="${x + 7}" y="21.5" width="4" height="4" fill="#8e5a2a" stroke="#6b3410" stroke-width=".5"/>`;
+  return `<rect x="34" y="2" width="50" height="29" fill="#20185a" opacity=".75"/>
+      <circle cx="40" cy="7" r=".5" fill="#fff"/><circle cx="57" cy="5" r=".5" fill="#fff"/><circle cx="76" cy="8" r=".5" fill="#fff"/>
+      <g class="gscroll">${world}</g>
+      <g class="ghop"><rect x="45" y="20" width="4.5" height="5.5" rx="1" fill="#5be3f0" stroke="#0d3b47" stroke-width=".6"/>
+      <rect x="47.6" y="21.5" width="1" height="1.2" fill="#0d3b47"/></g>`;
+}
+
 function mwScene(o) {
   const K = 'stroke="#141414" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"';
   const C = "var(--mw-c)";
@@ -95,9 +114,15 @@ function mwScene(o) {
       <stop offset="0" stop-color="#3d7bff"/><stop offset=".55" stop-color="#7b4dff"/><stop offset="1" stop-color="#ff7a45"/></linearGradient>
       <filter id="${id}f" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.5"/></filter></defs>
     ${tvLit && o.amp ? `<rect class="glow" x="34" y="2" width="50" height="29" style="fill:${C}" opacity=".7" filter="url(#${id}f)"/>` : ""}
-    <g ${K}><rect x="34" y="2" width="50" height="29" rx="1" fill="${tvLit ? `url(#${id}g)` : "#1b1b1b"}"/></g>
-    ${tvLit ? `<path d="M40 25 l9 -6 l6 3 l11 -9" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
-      : `<path d="M62 4 l-10 25" stroke="#fff" stroke-opacity=".12" stroke-width="5"/>`}`;
+    <rect x="34" y="2" width="50" height="29" rx="1" fill="${tvLit ? `url(#${id}g)` : "#1b1b1b"}"/>
+    ${tvLit ? `<clipPath id="${id}c"><rect x="35" y="3" width="48" height="27"/></clipPath>
+    <g clip-path="url(#${id}c)">
+      ${o.ps ? mwGame() : `<circle class="tvsun" cx="70" cy="11" r="3.2" fill="#ffd36b" opacity=".9"/>
+      <path class="tvpan far" d="${mwHills(34, 150, 22, 25, 2.6)}" fill="#3a2a7a" opacity=".55"/>
+      <path class="tvpan near" d="${mwHills(34, 150, 26, 50, 3.4)}" fill="#22184d" opacity=".8"/>`}
+      <rect class="tvflick" x="34" y="2" width="50" height="29" fill="#fff" opacity="0"/>
+    </g>` : `<path d="M62 4 l-10 25" stroke="#fff" stroke-opacity=".12" stroke-width="5"/>`}
+    <g ${K}><rect x="34" y="2" width="50" height="29" rx="1" fill="none"/></g>`;
   const cabinet = `<g ${K}>
     <polygon points="29,43 91,43 93,40 31,40" fill="#9b8f84"/>
     <rect x="29" y="43" width="62" height="21" fill="#f1ece0"/>
@@ -123,8 +148,11 @@ function mwScene(o) {
       <rect x="1" y="51" width="16" height="16" fill="#2a2a2a"/></g>
       <g class="${subLit ? "cone" : ""}"><circle cx="9" cy="59" r="5.6" fill="#161616" stroke="#4a4a4a" stroke-width=".9"/>
       <circle cx="9" cy="59" r="2" fill="#333" style="stroke:${subLit ? C : "#555"}" stroke-width=".8"/></g></g>`;
-  const pad = o.ps ? `<g ${K} stroke-width="1.1"><path d="M34 40 q1.5 -3.5 6 -3.5 h5 q4.5 0 6 3.5 l.6 2 q.6 2.5 -2 2.5 q-2 0 -3.5 -2 h-7 q-1.5 2 -3.5 2 q-2.6 0 -2 -2.5 z" fill="#f4f4f4"/></g>
-    ${lit ? `<rect x="40.5" y="37.5" width="4" height="1.2" rx=".6" style="fill:${C}"/>` : ""}` : "";
+  // The controller on the cabinet top, drawn a size up so it reads at button size; its light bar glows while playing.
+  const pad = o.ps ? `<g transform="translate(40.5 39) scale(1.4) translate(-42.5 -40.5)"><g ${K} stroke-width="1">
+    <path d="M34 40 q1.5 -3.5 6 -3.5 h5 q4.5 0 6 3.5 l.6 2 q.6 2.5 -2 2.5 q-2 0 -3.5 -2 h-7 q-1.5 2 -3.5 2 q-2.6 0 -2 -2.5 z" fill="#f4f4f4"/></g>
+    <circle cx="37.6" cy="40.2" r=".8" fill="#141414"/><circle cx="47.4" cy="40.2" r=".8" fill="#141414"/>
+    <rect class="${lit ? "padglow" : ""}" x="40.5" y="37.4" width="4" height="1.2" rx=".6" style="fill:${lit ? C : "#9a9a9a"}"/></g>` : "";
   const notes = ampLit && !o.tv ? `<g class="notes" style="fill:${C};stroke:${C}" stroke-width="1.4" stroke-linecap="round">
     <ellipse cx="50" cy="18" rx="2.6" ry="2" stroke="none"/><path d="M52.6 18 V7 l5 1.8" fill="none"/>
     <ellipse cx="65" cy="14" rx="2.3" ry="1.8" stroke="none"/><path d="M67.3 14 V4" fill="none"/></g>` : "";
@@ -213,6 +241,23 @@ ${Object.values(MW_COLORS).map(([v, d]) => `    ${v}: ${d};`).join("\n")}
   @keyframes mw-sway-r { from { transform: rotate(2.2deg); } to { transform: rotate(-2.2deg); } }
   .pump { transform-box: fill-box; transform-origin: 50% 100%; animation: mw-pump .6s ease-in-out infinite alternate; }
   @keyframes mw-pump { to { transform: scale(1.09); } }
+  /* TV on: two rows of hills drift by (parallax), the sun bobs, the picture flickers, the ambient glow breathes */
+  .tvpan { animation: mw-pan-far 9s linear infinite; }
+  .tvpan.near { animation: mw-pan-near 6s linear infinite; }
+  @keyframes mw-pan-far { to { transform: translateX(-25px); } }
+  @keyframes mw-pan-near { to { transform: translateX(-50px); } }
+  .tvsun { animation: mw-sun 4s ease-in-out infinite alternate; }
+  @keyframes mw-sun { to { transform: translate(-4px, 2px); } }
+  .tvflick { animation: mw-flick 3.2s steps(1) infinite; }
+  @keyframes mw-flick { 0%, 100% { opacity: 0; } 31% { opacity: .1; } 33% { opacity: 0; } 72% { opacity: .07; } 74% { opacity: 0; } }
+  .glow { animation: mw-glow 3s ease-in-out infinite alternate; }
+  @keyframes mw-glow { from { opacity: .5; } to { opacity: .85; } }
+  .gscroll { animation: mw-scroll 2.4s linear infinite; }
+  @keyframes mw-scroll { to { transform: translateX(-18px); } }
+  .ghop { animation: mw-hop .8s infinite; }
+  @keyframes mw-hop { 0%, 100% { transform: translateY(0); animation-timing-function: ease-out; } 45% { transform: translateY(-7px); animation-timing-function: ease-in; } 90% { transform: translateY(0); } }
+  .padglow { animation: mw-padglow 1.2s ease-in-out infinite alternate; }
+  @keyframes mw-padglow { from { opacity: .45; } to { opacity: 1; } }
   .jump { transform-box: fill-box; transform-origin: 50% 100%; animation: mw-jump .5s ease-out infinite; }
   @keyframes mw-jump { 0%, 45%, 100% { transform: translateY(0) scaleY(1); } 12% { transform: translateY(-1.3px) scaleY(1.02); } 28% { transform: translateY(0) scaleY(.97); } }
   .cone { transform-box: fill-box; transform-origin: 50% 50%; animation: mw-cone .25s ease-in-out infinite alternate; }
@@ -221,7 +266,7 @@ ${Object.values(MW_COLORS).map(([v, d]) => `    ${v}: ${d};`).join("\n")}
   @keyframes mw-notes { 0% { transform: translateY(2px); opacity: .4; } 50% { opacity: 1; } 100% { transform: translateY(-2px); opacity: .4; } }
   @keyframes mw-pulse { 50% { opacity: .45; } }
   @media (prefers-reduced-motion: reduce) {
-    .sway, .pump, .jump, .cone, .notes, .btn.busy .tx small, .pw.busy { animation: none !important; }
+    .sway, .pump, .jump, .cone, .notes, .tvpan, .tvsun, .tvflick, .glow, .gscroll, .ghop, .padglow, .btn.busy .tx small, .pw.busy { animation: none !important; }
   }
 `;
 
